@@ -2854,10 +2854,12 @@ async function doUp(){if(UP.i==null||!UP.tg)return toast('Выбери вкла�
  M(`<div class=card style="text-align:center"><h2>${win?'✅ Успех!':'❌ Неудача'}</h2>${win?card(tg):`<p>Вклад ${inp} уничтожен</p>`}<button class=or style="width:100%;margin-top:10px" onclick="X();upUI()">Ок</button></div>`)}
 function profUI(){const r=role(me.nick);$('#app').innerHTML=`<div class=card><h2>@${me.nick} ${['','🛡 Админ','👑 Владелец'][r]}</h2><div class=bal>🪙 <span class=bv>${fmt(me.bal)}</span></div>
  <input id=pc placeholder="Промокод"><button class=or style="width:100%" onclick=redeem()>Активировать</button>${r?'<button style="width:100%;margin-top:8px" onclick=pinUI()>⚙️ Админка</button>':''}</div>
- <div class=top><h3>Инвентарь (${me.inv.length})</h3><button onclick="PF.wd=!PF.wd;PF.sel.clear();profUI()">Вывод</button></div>
+ <div class=top><h3>Инвентарь (${me.inv.length})</h3><div style="display:flex;gap:6px">${!PF.wd&&me.inv.length?'<button onclick="sellAll()">Продать все</button>':''}<button onclick="PF.wd=!PF.wd;PF.sel.clear();profUI()">Вывод</button></div></div>
  ${PF.wd?`<div class=plate>Для вывода напиши владельцу: <b>@Dobro42O</b></div>`:''}
- <div class=inv>${me.inv.map((n,i)=>`<div onclick="${PF.wd?`tgl(${i})`:''}">${card(n,PF.sel.has(i)?'sel':'')}</div>`).join('')||'<p style="opacity:.6">Пусто — открой кейс!</p>'}</div>
+ <div class=inv>${me.inv.map((n,i)=>PF.wd?`<div onclick="tgl(${i})">${card(n,PF.sel.has(i)?'sel':'')}</div>`:`<div>${card(n)}<button onclick="sellOne(${i})" style="width:100%;margin-top:4px;padding:6px;font-size:12px">Продать ${fmt(V[n]||0)} 🪙</button></div>`).join('')||'<p style="opacity:.6">Пусто — открой кейс!</p>'}</div>
  ${PF.wd?`<button class=or style="width:100%;margin-top:10px;padding:14px" onclick=wd()>Подтвердить вывод</button>`:''}`}
+function sellOne(i){const n=me.inv[i];if(n===undefined)return;me.inv.splice(i,1);me.bal+=V[n]||0;save();toast('+'+fmt(V[n]||0)+' 🪙 за '+n);profUI()}
+function sellAll(){if(!me.inv.length)return toast('Инвентарь пуст');if(!confirm('Продать все брейнроты?'))return;const sum=me.inv.reduce((a,n)=>a+(V[n]||0),0);me.inv=[];me.bal+=sum;save();toast('+'+fmt(sum)+' 🪙');profUI()}
 function tgl(i){PF.sel.has(i)?PF.sel.delete(i):PF.sel.add(i);profUI()}
 function wd(){if(!PF.sel.size)return toast('Выбери брейнротов');me.inv=me.inv.filter((_,i)=>!PF.sel.has(i));PF.sel.clear();PF.wd=0;save();profUI();toast('Заявка создана. Напиши @Dobro42O');window.open(TG,'_blank')}
 function redeem(){const c=$('#pc').value.trim().toUpperCase(),p=DB.promos[c];if(!p||p.left<1)return toast('Промокод недействителен');if(p.used.includes(me.nick))return toast('Уже использован');p.left--;p.used.push(me.nick);me.bal+=p.amt;save();profUI();toast('+'+fmt(p.amt)+' 🪙')}
