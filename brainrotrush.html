@@ -4053,7 +4053,7 @@ let AC=null;function aud(){if(!AC){try{AC=new(window.AudioContext||window.webkit
 function tone(f,t0,d,type,vol){const c=aud();if(!c)return;const o=c.createOscillator(),g=c.createGain();o.type=type||'square';o.frequency.value=f;const t=c.currentTime+t0;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol||0.15,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+d);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+d+0.05)}
 function sfx(k){const T={tick:()=>tone(880,0,0.03,'square',0.04),common:()=>tone(440,0,0.15,'sine',0.12),rare:()=>[523,659,784].forEach((f,i)=>tone(f,i*0.1,0.2,'triangle',0.14)),epic:()=>[523,659,784,1046].forEach((f,i)=>tone(f,i*0.09,0.3,'triangle',0.16)),legend:()=>{[523,659,784,1046,1318].forEach((f,i)=>tone(f,i*0.1,0.35,'sawtooth',0.1));tone(1568,0.5,0.8,'triangle',0.2)},mythic:()=>{[392,523,659,784,1046,1318,1568].forEach((f,i)=>tone(f,i*0.08,0.4,'square',0.08));tone(2093,0.6,1.2,'sine',0.25)},up:()=>[600,800,1000,1200].forEach((f,i)=>tone(f,i*0.08,0.2,'triangle',0.15)),bad:()=>[400,330,260,200].forEach((f,i)=>tone(f,i*0.15,0.25,'sawtooth',0.1))};(T[k]||(()=>{}))()}
 function sfxRar(i){sfx(['common','rare','epic','legend','mythic'][i]||'common')}
-async function doOpen(){const{cs,n,fast}=CO;if(CO.busy)return;if(cs.tag&&!hasTag())return toast('Добавь в имя BrainrotRush и переоткрой апп');if(cs.tag&&n>1)return toast('Только x1');
+async function doOpen(){const{cs,n,fast}=CO;if(CO.busy)return;if(cs.tag&&!hasTag())return toast('Добавь в имя BrainrotRush и переоткрой апп');if(cs.tag&&n>1)return toast('Только x1');if(cs.tag&&Date.now()-(me.tagT||0)<432e5){const r=432e5-(Date.now()-(me.tagT||0));return toast('Следующая попытка через '+hms(r))}if(cs.tag)me.tagT=Date.now();
  if(cs.free){if(Date.now()<me.free)return toast('Доступно через '+hms(me.free-Date.now()));}else if(me.bal<cs.p*n)return toast('Недостаточно монет');
  if(cs.free)me.free=Date.now()+72e5;else me.bal-=cs.p*n;CO.busy=1;bv();
  const res=Array.from({length:n},()=>roll(cs)),st=$('#stage');
@@ -4062,7 +4062,7 @@ async function doOpen(){const{cs,n,fast}=CO;if(CO.busy)return;if(cs.tag&&!hasTag
   res.forEach((r,i)=>{const s=$('#s'+i),w=s.parentElement.clientWidth;s.style.transition='transform 4s cubic-bezier(.1,.7,.1,1)';s.style.transform=`translateX(${-(34*78+39-w/2+R(-24,24))}px)`});await sleep(4300)}
  sfxRar(Math.max(...res.map(r=>rar(r.v))));st.innerHTML=`<div class=res>${res.map(r=>cell(r,1)).join('')}</div>`;
  res.forEach(r=>{if(r.c)me.bal+=r.v;else me.inv.push(r.n);addFeed(me.nick,r)});save();bv();CO.busy=0}
-function chance(){if(UP.i==null||!UP.tg)return 0;const v=V[me.inv[UP.i]];return Math.max(.1,Math.min(95,+(v/V[UP.tg]*100+(DB.luck?15:0)).toFixed(1)))}
+function chance(){if(UP.i==null||!UP.tg)return 0;const v=V[me.inv[UP.i]];return Math.max(.1,Math.min(95,+((v/V[UP.tg]*100)/1.5+(DB.luck?15:0)).toFixed(1)))}
 function near(x){return NAMES.reduce((b,n)=>Math.abs(V[n]-x)<Math.abs(V[b]-x)?n:b)}
 function upUI(){if(UP.i!=null&&!me.inv[UP.i])UP.i=null;const c=chance(),inp=UP.i!=null?me.inv[UP.i]:null,k=inp&&UP.tg?(V[UP.tg]/V[inp]).toFixed(2):'—';
  $('#app').innerHTML=`<div class=pn><div class=hz></div><div class=ttl>❄ SPRING UPGRADE 🌸 <span class=leds><i class="led g"></i><i class="led ${inp&&UP.tg?'o':''}"></i><i class="led ${DB.luck?'b':''}"></i></span></div>
@@ -4091,7 +4091,7 @@ async function mGo(){if(MY.b)return;if(MY.i==null)return toast('Выбери б�
  mysUI(`<div class="lcd pop" style="padding:14px;border-color:${RC[rar(V[out])]};box-shadow:0 0 24px ${RC[rar(V[out])]}"><small>ВЫПАЛО</small><div style="font-size:72px;line-height:1.3">${ico(out)}</div><b style="font-size:22px;color:#fff">${out}</b><small>${fmt(V[out])} 🪙 · x${(V[out]/v).toFixed(2)} от ${inp} (${fmt(v)})</small></div>`);toast('Выпал: '+out)}
 function pickIn(){M(`<h3>Инвентарь</h3><div class=inv>${me.inv.map((n,i)=>`<div onclick="UP.i=${i};X();upUI()">${card(n)}</div>`).join('')||'Пусто'}</div><button style="width:100%;margin-top:10px" onclick=X()>Закрыть</button>`)}
 function pickTg(){M(`<h3>Цель</h3><div class=inv>${NAMES.map(n=>`<div onclick="UP.tg='${n.replace(/'/g,"\\'")}';X();upUI()">${card(n)}</div>`).join('')}</div><button style="width:100%;margin-top:10px" onclick=X()>Закрыть</button>`)}
-function mul(m,p){if(UP.i==null)return toast('Сначала выбери вклад');const v=V[me.inv[UP.i]];UP.tg=near(m?v*m:v*100/(p-(DB.luck?15:0)));upUI()}
+function mul(m,p){if(UP.i==null)return toast('Сначала выбери вклад');const v=V[me.inv[UP.i]];UP.tg=near(m?v*m:v*100/(1.5*(p-(DB.luck?15:0))));upUI()}
 async function doUp(){if(UP.i==null||!UP.tg)return toast('Выбери вклад и цель');const c=chance(),inp=me.inv[UP.i],tg=UP.tg,r=Math.random()*100,win=r<c;
  if(!UP.fast){const a=$('#ar');$('#gg').classList.add('run');a.style.transition='transform 3.5s cubic-bezier(.15,.7,.1,1)';a.style.transform=`rotate(${1440+r*3.6}deg)`;await sleep(3700)}
  me.inv.splice(UP.i,1);if(win){me.inv.push(tg);addFeed(me.nick,{n:tg,v:V[tg]})}save();UP.i=null;if(win)sfxRar(rar(V[tg]));else sfx('bad');
@@ -4113,7 +4113,7 @@ function adm(){M(`<div class=card><h3>⚙️ Админ-панель</h3><input 
  <select id=ai>${NAMES.map(n=>`<option>${n}</option>`).join('')}</select><div class=row><button onclick="aItem(1)">Выдать брейнрот</button><button onclick="aItem(0)">Удалить</button></div>
  <h4 style="margin-top:8px">Промокод</h4><input id=pa type=number placeholder="Сумма"><input id=pn type=number placeholder="Активаций"><button class=or style="width:100%" onclick=aPromo()>Сгенерировать</button><p id=pr style="margin:6px 0;font-weight:700"></p>
  <button class="${DB.luck?'on':''}" style="width:100%" onclick="DB.luck=!DB.luck;save();adm()">⭐ Удача: ${DB.luck?'ВКЛ':'ВЫКЛ'}</button><button style="width:100%;margin-top:8px" onclick="X();go('prof')">Закрыть</button></div>`)}
-const tu=async()=>{const n=$('#an').value.replace('@','').trim().toLowerCase();let u=FB?await fb('users/'+n):DB.users[n];if(u){u.inv=u.inv||[];DB.users[n]=u}if(!u)toast('Игрок не найден');return u};
+const tu=async()=>{const n=$('#an').value.replace('@','').trim().toLowerCase();if(!n){toast('Введи ник');return null}let u=FB?await fb('users/'+n):DB.users[n];if(!u)u={nick:n,bal:0,inv:[],ban:0,free:0,promos:[]};u.inv=u.inv||[];DB.users[n]=u;return u};
 async function aBal(){const u=await tu();if(!u)return;u.bal=Math.max(0,u.bal+(+$('#aa').value||0));save();if(FB)fb('users/'+u.nick,'PUT',u);toast('Баланс: '+fmt(u.bal))}
 async function aBan(on){const t=$('#an').value.replace('@','').trim().toLowerCase();if(role(me.nick)<1)return toast('Недостаточно прав');
  if(role(t)==2&&role(me.nick)<2)return toast('Недостаточно прав');if(t==me.nick)return toast('Нельзя забанить себя');let u=DB.users[t];if(!u&&FB)u=DB.users[t]=await fb('users/'+t);if(!u)return toast('Игрок не найден');u.ban=on;save();if(FB)fb('users/'+t,'PUT',u);toast(on?'Забанен':'Разбанен')}
